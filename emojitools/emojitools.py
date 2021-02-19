@@ -225,7 +225,7 @@ class EmojiTools(commands.Cog):
 
         return await ctx.send(f"{final_emoji} has been added to this server!")
 
-    @commands.cooldown(rate=1, per=30)
+    @commands.cooldown(rate=1, per=5)
     @_add.command(name="emojis")
     async def _add_emojis(self, ctx: commands.Context, *emojis: str):
         """Add some emojis to this server."""
