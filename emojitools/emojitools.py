@@ -14,7 +14,7 @@ from asynctempfile import TemporaryDirectory, NamedTemporaryFile
 TIME_OUT = "The request timed out or we are being ratelimited, please try again after a few moments."
 FORBIDDEN = "I cannot create custom emojis!"
 INVOKE_ERROR = "Something went wrong while adding the emoji(s). Has the limit been reached?"
-HTTP_EXCEPTION = "Something went wrong while adding the emoji(s) (the source file may be too big)."
+HTTP_EXCEPTION = "Something went wrong while adding the emoji(s)! You probally have no slots remaining, or the emoji was too big."
 
 
 class EmojiTools(commands.Cog):
