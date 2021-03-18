@@ -1,7 +1,32 @@
-from redbot.core import commands, Config
-import discord
-import typing
+"""
+MIT License
+
+Copyright (c) 2021 Obi-Wan3
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import re
+import typing
+
+import discord
+from redbot.core import commands, Config
 
 
 class StatusRole(commands.Cog):
@@ -114,7 +139,7 @@ class StatusRole(commands.Cog):
                 if not s:
                     return False
                 try:
-                    return re.fullmatch(r, s)
+                    return re.search(r, s)
                 except re.error:
                     return False
 
@@ -176,6 +201,9 @@ class StatusRole(commands.Cog):
     @_status_role.command(name="add")
     async def _add(self, ctx: commands.Context, pair_name: str, role: discord.Role, *, custom_status_regex: str):
         """Add a role to be assigned to users with a matching emoji (optional) and custom status (accepts regex)."""
+        if role >= ctx.author.top_role and ctx.author != ctx.guild.owner:
+            return await ctx.send("That role is above you in the role hierarchy!")
+
         async with self.config.guild(ctx.guild).roles() as roles:
             if pair_name in roles.keys():
                 return await ctx.send("There is already a StatusRole with this name! Please edit/delete it or choose another name.")
@@ -278,17 +306,24 @@ class StatusRole(commands.Cog):
 
                             if await self._status_matches(roles[sr]["status"], roles[sr]["emoji"], m_status):
                                 if roles[sr]["role"] not in [r.id for r in m.roles]:  # Does not already have role
-                                    await m.add_roles(r, reason=f"StatusRole ForceUpdate: custom status matched {sr}")
-                                    if log_channel:
-                                        await self._send_log(log_channel, True, m, r, m_status.name, m_status.emoji.name if m_status.emoji else "None")
+                                    try:
+                                        await m.add_roles(r, reason=f"StatusRole ForceUpdate: custom status matched {sr}")
+                                        if log_channel:
+                                            await self._send_log(log_channel, True, m, r, m_status.name, m_status.emoji.name if m_status.emoji else "None")
+                                    except discord.Forbidden:
+                                        pass
                             else:
                                 if roles[sr]["role"] in [r.id for r in m.roles]:  # Has role but status does not match
-                                    await m.remove_roles(r, reason=f"StatusRole ForceUpdate: custom status does not match {sr}")
-                                    if log_channel:
-                                        await self._send_log(log_channel, False, m, r, m_status.name, m_status.emoji.name if m_status.emoji else "None")
+                                    try:
+                                        await m.remove_roles(r, reason=f"StatusRole ForceUpdate: custom status does not match {sr}")
+                                        if log_channel:
+                                            await self._send_log(log_channel, False, m, r, m_status.name, m_status.emoji.name if m_status.emoji else "None")
+                                    except discord.Forbidden:
+                                        pass
 
         return await ctx.send("Force update completed!")
 
+    @commands.bot_has_permissions(embed_links=True)
     @_status_role.command(name="view", aliases=["list"])
     async def _view(self, ctx: commands.Context):
         """View the StatusRole settings for this server."""

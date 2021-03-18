@@ -1,17 +1,45 @@
-from redbot.core import commands, Config
-from redbot.core.utils.predicates import MessagePredicate
-from .quizroleconverters import ExplicitNone, PositiveInteger
+"""
+MIT License
 
-import discord
-import typing
+Copyright (c) 2021 Obi-Wan3
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import time
+import typing
 import random
 import asyncio
 from datetime import datetime, timedelta
 
+import discord
+from redbot.core import commands, Config
+from redbot.core.utils.predicates import MessagePredicate
+from .converters import ExplicitNone, PositiveInteger
+
 
 class QuizRole(commands.Cog):
-    """Take a Quiz to Gain a Role"""
+    """
+    Take a Quiz to Gain a Role
+
+    Automatically assign roles to users who have taken and successfully passed a quiz through DMs.
+    """
 
     def __init__(self, bot):
         self.bot = bot
@@ -103,6 +131,7 @@ class QuizRole(commands.Cog):
                 await self.bot.get_channel(logchannel).send(f"{ctx.author.mention} did not pass `{quiz_name}` with a score of {score}/{len(questions)}.")
             return await ctx.author.send(f"Unfortunately, you did not pass the quiz `{quiz_name}`; the minimum score was {quiz['minscore']}/{len(questions)} and you received a score of {score}/{len(questions)}.")
 
+    @commands.bot_has_permissions(embed_links=True)
     @commands.guild_only()
     @commands.command(name="quizroles")
     async def _quizroles(self, ctx: commands.Context):
@@ -361,6 +390,7 @@ class QuizRole(commands.Cog):
 
         return await ctx.send(f"Quiz `{quiz_name}` was removed from this server's QuizRoles.")
 
+    @commands.bot_has_permissions(embed_links=True)
     @_quizroleset.command(name="view", aliases=["list"])
     async def _view(self, ctx: commands.Context):
         """View QuizRole settings for this server."""

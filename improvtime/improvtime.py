@@ -1,11 +1,40 @@
+"""
+MIT License
+
+Copyright (c) 2021 Obi-Wan3
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+import random
+
+import discord
 from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import humanize_list, pagify
-import discord
-import random
 
 
 class ImprovTime(commands.Cog):
-    """Story improv, one word at a time."""
+    """
+    One Word Story Channel
+
+    Story improv, one word at a time.
+    """
 
     def __init__(self, bot):
         self.bot = bot
@@ -67,50 +96,50 @@ class ImprovTime(commands.Cog):
 
     @commands.guild_only()
     @commands.mod()
-    @commands.group()
-    async def improvtime(self, ctx: commands.Context):
+    @commands.group(name="improvtime")
+    async def _improvtime(self, ctx: commands.Context):
         """Settings for ImprovTime"""
 
-    @improvtime.command(name="toggle")
+    @_improvtime.command(name="toggle")
     async def _toggle(self, ctx: commands.Context, true_or_false: bool):
         """Toggle ImprovTime in this server."""
         await self.config.guild(ctx.guild).toggle.set(true_or_false)
         return await ctx.tick()
 
-    @improvtime.command(name="channel")
+    @_improvtime.command(name="channel")
     async def _channel(self, ctx: commands.Context, channel: discord.TextChannel):
         """Set the ImprovTime story channel."""
         await self.config.guild(ctx.guild).channel.set(channel.id)
         return await ctx.tick()
 
-    @improvtime.command(name="allowrepeats")
+    @_improvtime.command(name="allowrepeats")
     async def _allow_repeats(self, ctx: commands.Context, true_or_false: bool):
         """Toggle whether users can send multiple messages in a row."""
         await self.config.guild(ctx.guild).allow_repeats.set(true_or_false)
         return await ctx.tick()
 
-    @improvtime.command(name="addphrase")
-    async def _addphrase(self, ctx: commands.Context, *, phrase: str):
+    @_improvtime.command(name="addphrase")
+    async def _add_phrase(self, ctx: commands.Context, *, phrase: str):
         """Add a phrase to the phraselist."""
         async with self.config.guild(ctx.guild).phrase_list() as p:
             p.append(phrase.strip())
         return await ctx.tick()
 
-    @improvtime.command(name="removephrase")
-    async def _removephrase(self, ctx: commands.Context, phrase_index: int):
+    @_improvtime.command(name="removephrase")
+    async def _remove_phrase(self, ctx: commands.Context, phrase_index: int):
         """Remove a phrase from the phraselist (see index from current settings)."""
         async with self.config.guild(ctx.guild).phrase_list() as p:
             p.pop(phrase_index)
         return await ctx.tick()
 
-    @improvtime.command(name="block")
+    @_improvtime.command(name="block")
     async def _block(self, ctx: commands.Context, user: discord.Member):
         """Blocks a user from ending the sentence."""
         async with self.config.guild(ctx.guild).blocklist() as b:
             b.append(user.id)
         return await ctx.tick()
 
-    @improvtime.command(name="unblock")
+    @_improvtime.command(name="unblock")
     async def _unblock(self, ctx: commands.Context, user: discord.Member):
         """Unblocks a user from ending the sentence."""
         async with self.config.guild(ctx.guild).blocklist() as b:
@@ -120,15 +149,16 @@ class ImprovTime(commands.Cog):
                 pass
         return await ctx.tick()
 
-    @improvtime.command(name="wordlimit")
-    async def _wordlimit(self, ctx: commands.Context, num: int):
+    @_improvtime.command(name="wordlimit")
+    async def _word_limit(self, ctx: commands.Context, num: int):
         """Set the the maximum words allowed for each story message."""
         if not num > 0:
             return await ctx.send("Please enter a positive integer.")
         await self.config.guild(ctx.guild).word_limit.set(num)
         return await ctx.tick()
 
-    @improvtime.command(name="view")
+    @commands.bot_has_permissions(embed_links=True)
+    @_improvtime.command(name="view")
     async def _view(self, ctx: commands.Context):
         """View the current ImprovTime settings."""
         settings = await self.config.guild(ctx.guild).all()

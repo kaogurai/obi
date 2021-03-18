@@ -1,9 +1,37 @@
-from redbot.core import commands, Config
+"""
+MIT License
+
+Copyright (c) 2021 Obi-Wan3
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import discord
+from redbot.core import commands, Config
 
 
 class PrivateRooms(commands.Cog):
-    """Automatic Private VCs with Lobby"""
+    """
+    Automatic Private VCs with Lobby
+
+    Private VCs that are created automatically, with permission overrides for a lobby channel.
+    """
 
     def __init__(self, bot):
         self.bot = bot
@@ -177,7 +205,10 @@ class PrivateRooms(commands.Cog):
 
                         # If log channel set, then send logs
                         if sys['log_channel']:
-                            await member.guild.get_channel(sys['log_channel']).send(f'{member.mention} created `{private_vc.name}`')
+                            await member.guild.get_channel(sys['log_channel']).send(
+                                f'{member.mention} created `{private_vc.name}`',
+                                allowed_mentions=discord.AllowedMentions.none()
+                            )
 
                         # Add to active list
                         sys['active'].append((private_vc.id, member.id))
@@ -330,6 +361,7 @@ class PrivateRooms(commands.Cog):
 
         return await ctx.send(f"The active rooms in `{system_name}` were cleared.")
 
+    @commands.bot_has_permissions(embed_links=True)
     @_privaterooms.command(name="view")
     async def _view(self, ctx: commands.Context):
         """View the PrivateRooms settings in this server."""

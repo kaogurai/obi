@@ -1,8 +1,33 @@
-from redbot.core import commands, Config, bank
-from redbot.core.utils.chat_formatting import humanize_list
-import discord
+"""
+MIT License
+
+Copyright (c) 2021 Obi-Wan3
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import typing
 from datetime import datetime, timedelta, timezone
+
+import discord
+from redbot.core import commands, Config, bank
+from redbot.core.utils.chat_formatting import humanize_list
 
 
 class UploadStreaks(commands.Cog):
@@ -72,6 +97,7 @@ class UploadStreaks(commands.Cog):
     async def _upload_streaks(self, ctx: commands.Context):
         """UploadStreaks Settings"""
 
+    @commands.bot_has_permissions(embed_links=True)
     @_upload_streaks.command(name="list")
     async def _list(self, ctx: commands.Context):
         """List the current UploadStreaks challenges."""
@@ -86,6 +112,7 @@ class UploadStreaks(commands.Cog):
                 embed.description += f"**{count+1}.** {name}"
         return await ctx.send(embed=embed)
 
+    @commands.bot_has_permissions(embed_links=True)
     @_upload_streaks.command(name="leaderboard", aliases=['ldb'])
     async def _leaderboard(self, ctx: commands.Context, challenge: str, num=10):
         """See the current UploadStreaks leaderboard for a challenge."""
@@ -105,6 +132,7 @@ class UploadStreaks(commands.Cog):
             embed.description += "```"
         return await ctx.send(embed=embed)
 
+    @commands.bot_has_permissions(embed_links=True)
     @_upload_streaks.command(name="user")
     async def _user(self, ctx: commands.Context, user: discord.Member):
         """See a user's UploadStreaks points."""
@@ -338,6 +366,7 @@ class UploadStreaks(commands.Cog):
 
         return await ctx.tick()
 
+    @commands.bot_has_permissions(embed_links=True)
     @_settings.command(name="view")
     async def _settings_view(self, ctx: commands.Context):
         """View the settings of UploadStreaks challenges in this server."""
