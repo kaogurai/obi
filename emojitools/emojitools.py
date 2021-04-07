@@ -36,9 +36,10 @@ from redbot.core import commands, data_manager
 
 # Error messages
 TIME_OUT = "The request timed out or we are being ratelimited, please try again after a few moments."
-FORBIDDEN = "I cannot create custom emojis, can you give me the permission?"
-INVOKE_ERROR = "Something went wrong while adding the emoji(s)!"
-HTTP_EXCEPTION = "Something went wrong! You probably have no slots remaining, or the emoji was too big."
+FORBIDDEN = "I cannot create custom emojis!"
+INVOKE_ERROR = "Something went wrong while adding the emoji(s). Has the limit been reached?"
+HTTP_EXCEPTION = "Something went wrong while adding the emoji(s) (the source file may be too big)."
+FILE_SIZE = "Unfortunately, it seems the attachment was too large to be sent."
 
 
 class EmojiTools(commands.Cog):
@@ -178,7 +179,10 @@ class EmojiTools(commands.Cog):
 
             zip_file_obj = discord.File(zip_path+".zip")
 
-        return await ctx.send(file=zip_file_obj)
+        try:
+            return await ctx.send(file=zip_file_obj)
+        except discord.HTTPException:
+            return await ctx.send(FILE_SIZE)
 
     @staticmethod
     async def getfiles(path):
@@ -485,8 +489,10 @@ class EmojiTools(commands.Cog):
                         await z.write(chunk)
                     await z.seek(0)
                     zip_file_obj = discord.File(z.name, filename="emojis.zip")
-
-        return await ctx.send(f"{len(emojis)} emojis were saved to this `.zip` archive!", file=zip_file_obj)
+        try:
+            return await ctx.send(f"{len(emojis)} emojis were saved to this `.zip` archive!", file=zip_file_obj)
+        except discord.HTTPException:
+            return await ctx.send(FILE_SIZE)
 
     @commands.cooldown(rate=1, per=60)
     @_to_zip.command(name="server")
@@ -514,4 +520,7 @@ class EmojiTools(commands.Cog):
                     await z.seek(0)
                     zip_file_obj = discord.File(z.name, filename=f"{ctx.guild.name}.zip")
 
-        return await ctx.send(f"{count} emojis were saved to this `.zip` archive!", file=zip_file_obj)
+        try:
+            return await ctx.send(f"{count} emojis were saved to this `.zip` archive!", file=zip_file_obj)
+        except discord.HTTPException:
+            return await ctx.send(FILE_SIZE)

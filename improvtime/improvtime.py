@@ -47,6 +47,7 @@ class ImprovTime(commands.Cog):
         if not message.guild:
             return
         story_channel = await self.config.guild(message.guild).channel()
+        channel_perms: discord.Permissions = message.channel.permissions_for(message.guild.me)
 
         # Ignore these messages
         if (
@@ -54,7 +55,8 @@ class ImprovTime(commands.Cog):
             await self.bot.cog_disabled_in_guild(self, message.guild) or  # Cog disabled in guild
             not await self.config.guild(message.guild).toggle() or  # ImprovTime toggled off
             message.author.bot or  # Message author is a bot
-            story_channel is None  # Story channel not set
+            story_channel is None or  # Story channel not set
+            not channel_perms.read_message_history  # Cannot read channel history
         ):
             return
 
@@ -66,13 +68,17 @@ class ImprovTime(commands.Cog):
                 (await message.channel.history(limit=1, before=message).flatten())[0].author.id == message.author.id
             )  # Allow repeats is off and last message is also from same author
         ):
-            return await message.delete()
+            if channel_perms.manage_messages:
+                return await message.delete()
+            else:
+                return
 
         # These messages are sentence endings
         blocklist = await self.config.guild(message.guild).blocklist()
         if (
             message.content.strip().split()[-1][-1] in ["!", ".", "?"] and
-            message.author.id not in blocklist
+            message.author.id not in blocklist and
+            channel_perms.send_messages
         ):
             sentence = message.content
             async for m in message.channel.history(limit=None, before=message):
@@ -161,14 +167,22 @@ class ImprovTime(commands.Cog):
     @_improvtime.command(name="view")
     async def _view(self, ctx: commands.Context):
         """View the current ImprovTime settings."""
+
         settings = await self.config.guild(ctx.guild).all()
+
         phrases = settings["phrase_list"]
         phrases_string = ""
+
         for phrase_index, phrase in enumerate(phrases):
             phrases_string += f"{phrase_index}. {phrase}\n"
+        
+        channel = None
+        if settings["channel"] and (ch := ctx.guild.get_channel(settings["channel"])):
+            channel = ch.mention
+
         desc = f"""
             **Toggle:** {settings["toggle"]}
-            **Channel:** {self.bot.get_channel(settings["channel"]).mention if settings["channel"] is not None else None}
+            **Channel:** {channel}
             **Use Phrases:** {settings["use_phrases"]}
             **Word Limit:** {settings["word_limit"]}
             **Allow Repeat Messages from User:** {settings["allow_repeats"]}

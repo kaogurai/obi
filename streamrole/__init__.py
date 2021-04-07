@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
-from .github import GitHub
+from .streamrole import StreamRole
 
 with open(Path(__file__).parent / "info.json") as fp:
     __red_end_user_data_statement__ = json.load(fp)["end_user_data_statement"]
 
 
 async def setup(bot):
-    bot.add_cog(GitHub(bot))
+    bot.add_cog(StreamRole(bot))
