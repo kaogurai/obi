@@ -22,9 +22,10 @@ Cogs marked with a ✓ are ready for use, while those with a ✗ are still a Wor
 | EmbedReact | ✓ | Auto-Reactions to Embeds | Obi-Wan3, HEW#6942 (BC) |
 | EmojiTools | ✓ | Tools for Managing Custom Emojis | Obi-Wan3, SHADOW6six#8807 (BC) |
 | FaH | ✓ | Various [Folding@Home](https://foldingathome.org/) Stats | Obi-Wan3, SaraCaterina#1015 (BC) |
-| Github | ✓ | Github RSS Commit Feeds | Obi-Wan3 |
+| GitHub | ✓ | Github RSS Commit Feeds | Obi-Wan3 |
 | ImprovTime | ✓ | One Word Story Channel | Obi-Wan3, Atmos#0101 (BC) |
 | MentionHelp | ✓ | Customizable MentionHelp Message | Obi-Wan3 |
+| NoDMs | ✓ | Disallow DM Commands | Obi-Wan3 |
 | PrivateRooms | ✓ | Automatic Private VCs with Lobby | Obi-Wan3, Archetype (Bloib & Echospawn, BC) |
 | PublicRooms | ✓ | Automatic Public VC Creation | Obi-Wan3, Archetype (Bloib & Echospawn, BC) |
 | QuizRole | ✓ | Take a Quiz to Gain a Role | Obi-Wan3, Tetra#0001 (BC) |
@@ -33,6 +34,7 @@ Cogs marked with a ✓ are ready for use, while those with a ✗ are still a Wor
 | RestrictedRolePerms | ✓ | Give Certain Roles Restricted Permissions | Obi-Wan3, Mile High#7102 (BC) |
 | SiteStatus | ✓ | Monitor Website Statuses | Obi-Wan3 |
 | StatusRole | ✓ | Roles for Certain Custom Statuses | Obi-Wan3, ry#1000 (BC) |
+| StreamRole | ✓ | Roles for Discord Streamers | Obi-Wan3 |
 | TemplatePosts | ✓ | Posts w/ Template Requirements | Obi-Wan3, Barnabas#6666 (BC) |
 | TempRole | ✓ | Assign Temporary Roles | Obi-Wan3, Tetra#0001 (BC) |
 | Translate | ✓ | Free Google Translations | Obi-Wan3 |
