@@ -361,7 +361,7 @@ class RestrictedRolePerms(commands.Cog):
         """Edit a rule to give certain roles restricted permissions."""
 
     @_edit_rule.command(name="mentionable")
-    async def _edit_mentionable(self, ctx: commands.Context, role_to_give_perms_to: discord.Role, true_or_false, *roles_to_edit_mentionability: typing.Union[discord.Role, ExplicitAll]):
+    async def _edit_mentionable(self, ctx: commands.Context, role_to_give_perms_to: discord.Role, true_or_false: bool, *roles_to_edit_mentionability: typing.Union[discord.Role, ExplicitAll]):
         """
         Edit a rule to allow a role to make a few other roles mentionable through RRP.
 
@@ -384,13 +384,13 @@ class RestrictedRolePerms(commands.Cog):
             for role_to_edit in roles_to_edit_mentionability:
                 if role_to_edit != "all":
                     if true_or_false:
-                        if role_to_edit in rules[str(role_to_give_perms_to.id)]:
+                        if role_to_edit.id in rules[str(role_to_give_perms_to.id)]:
                             await ctx.send(f"Cannot add {role_to_edit.mention} as it was already in the rule.")
                             continue
                         rules[str(role_to_give_perms_to.id)].append(role_to_edit.id)
                         await ctx.send(f"{role_to_give_perms_to.mention} is now allowed to toggle mentionability for {role_to_edit.mention}")
                     else:
-                        if role_to_edit not in rules[str(role_to_give_perms_to.id)]:
+                        if role_to_edit.id not in rules[str(role_to_give_perms_to.id)]:
                             await ctx.send(f"Cannot remove {role_to_edit.mention} as it was not in the rule.")
                             continue
                         rules[str(role_to_give_perms_to.id)].remove(role_to_edit.id)
@@ -410,7 +410,7 @@ class RestrictedRolePerms(commands.Cog):
                         await ctx.send(f"{role_to_give_perms_to.mention} is no longer allowed to toggle mentionability for {role_to_edit.mention}")
 
     @_edit_rule.command(name="assignable")
-    async def _edit_assignable(self, ctx: commands.Context, role_to_give_perms_to: discord.Role, true_or_false, *roles_to_edit_assignability: typing.Union[discord.Role, ExplicitAll]):
+    async def _edit_assignable(self, ctx: commands.Context, role_to_give_perms_to: discord.Role, true_or_false: bool, *roles_to_edit_assignability: typing.Union[discord.Role, ExplicitAll]):
         """
         Edit a rule to allow a certain role to assign a few other roles through RRP.
 
@@ -427,20 +427,20 @@ class RestrictedRolePerms(commands.Cog):
                     return await ctx.send(
                         f"{ra.mention} is above {role_to_give_perms_to.mention} in the role hierarchy!")
 
-        async with self.config.guild(ctx.guild).mentionable.rules() as rules:
+        async with self.config.guild(ctx.guild).assignable.rules() as rules:
             if not rules.get(str(role_to_give_perms_to.id)):
                 return await ctx.send(f"There no rule for that role!")
             for role_to_edit in roles_to_edit_assignability:
                 if role_to_edit != "all":
                     if true_or_false:
-                        if role_to_edit in rules[str(role_to_give_perms_to.id)]:
+                        if role_to_edit.id in rules[str(role_to_give_perms_to.id)]:
                             await ctx.send(f"Cannot add {role_to_edit.mention} as it was already in the rule.")
                             continue
                         rules[str(role_to_give_perms_to.id)].append(role_to_edit.id)
                         await ctx.send(
                             f"{role_to_give_perms_to.mention} is now allowed to assign {role_to_edit.mention}")
                     else:
-                        if role_to_edit not in rules[str(role_to_give_perms_to.id)]:
+                        if role_to_edit.id not in rules[str(role_to_give_perms_to.id)]:
                             await ctx.send(f"Cannot remove {role_to_edit.mention} as it was not in the rule.")
                             continue
                         rules[str(role_to_give_perms_to.id)].remove(role_to_edit.id)
