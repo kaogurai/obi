@@ -44,11 +44,11 @@ class Translate(commands.Cog):
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(name="translate")
-    async def _translate(self, ctx: commands.Context, language, message: typing.Optional[discord.Message], *, text=None):
-        """Translate something (provide either a message ID/link or some text)."""
+    async def _translate(self, ctx: commands.Context, language, message: typing.Optional[discord.Message], *, text: typing.Optional[str]):
+        """Translate something by providing a message ID/link, some text, or just replying to the original message."""
 
-        if not message and not text:
-            return await ctx.send("Please provide either a message ID/link or some text to translate.")
+        if not message and not text and not (ctx.message.reference and isinstance(ctx.message.reference.resolved, discord.Message)):
+            return await ctx.send("Please provide a message ID/link, some text to translate, or reply to the original message.")
 
         async with ctx.typing():
 
@@ -57,7 +57,24 @@ class Translate(commands.Cog):
             elif language.lower() in ("zh", "ch", "chinese"):
                 language = "zh-cn"
 
-            task = functools.partial(TRANSLATOR.translate, text=message.content if message else text, dest=language)
+            to_translate, to_reply = None, None
+            if message:
+                to_translate = message.content
+                to_reply = message
+            if text:
+                to_translate = text
+                to_reply = ctx.message
+            if ctx.message.reference:
+                to_translate = ctx.message.reference.resolved.content
+                to_reply = ctx.message.reference.resolved
+
+            if not (to_translate and to_reply):
+                return await ctx.send("Nothing to translate.")
+
+            if to_reply.channel.id != ctx.channel.id:
+                to_reply = None
+
+            task = functools.partial(TRANSLATOR.translate, text=to_translate, dest=language)
 
             try:
                 res = await self.bot.loop.run_in_executor(None, task)
@@ -69,4 +86,6 @@ class Translate(commands.Cog):
             translated_embed.add_field(name=googletrans.LANGUAGES[res.src.lower()].title(), value=res.origin, inline=True)
             translated_embed.add_field(name=googletrans.LANGUAGES[res.dest.lower()].title(), value=res.text, inline=True)
 
-        return await ctx.channel.send(embed=translated_embed)
+        if hasattr(to_reply, "reply"):
+            return await to_reply.reply(embed=translated_embed, mention_author=False)
+        return await ctx.send(embed=translated_embed)

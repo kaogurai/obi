@@ -60,7 +60,7 @@ class Referrals(commands.Cog):
 
         log_channel = await self.config.guild(ctx.guild).log_channel()
         if log_channel:
-            log_channel = await ctx.guild.get_channel(log_channel)
+            log_channel = ctx.guild.get_channel(log_channel)
             if not (log_channel and log_channel.permissions_for(ctx.guild.me).send_messages):
                 log_channel = None
 
@@ -69,6 +69,12 @@ class Referrals(commands.Cog):
             if log_channel:
                 await log_channel.send(f"{ctx.author.mention} tried to run `{ctx.clean_prefix}referredby` but has already done so before.")
             return await ctx.send("You have already ran this command! You can only use this once.")
+
+        # Self-referral
+        if ctx.author == member:
+            if log_channel:
+                await log_channel.send(f"{ctx.author.mention} tried to run `{ctx.clean_prefix}referredby` with a self-referral.")
+            return await ctx.send("You cannot refer yourself!")
 
         # No credit set by admin yet
         to_deposit = await self.config.guild(ctx.guild).amount()
