@@ -23,15 +23,16 @@ SOFTWARE.
 """
 
 import re
-import time
 import aiohttp
-import datetime
 import feedparser
+from datetime import datetime, timezone
 
 import discord
 from discord.ext import tasks
 from redbot.core import commands, Config
-from redbot.core.utils.chat_formatting import escape
+from redbot.core.utils.chat_formatting import escape, pagify
+
+TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class GitHub(commands.Cog):
@@ -64,7 +65,7 @@ class GitHub(commands.Cog):
         desc_regex = r"https://github.com/.*?/.*?/commit/(.*)"
         desc = re.fullmatch(desc_regex, entry.link).group(1)[:7]
         desc = f"[`{desc}`]({entry.link}) {entry.title} – {entry.author}"
-        t = datetime.datetime.fromtimestamp(time.mktime(entry.updated_parsed))
+        t = datetime.strptime(entry.updated, TIME_FORMAT).replace(tzinfo=timezone.utc)
         e = discord.Embed(title=title, color=0x7289da, description=desc, url=entry.link, timestamp=t)
         e.set_author(name=entry.author, url=entry.href, icon_url=entry.media_thumbnail[0]["url"])
         return e
@@ -86,7 +87,7 @@ class GitHub(commands.Cog):
             desc += f"[`{desc0}`]({e.link}) {e.title} – {e.author}\n"
             num += 1
         title = f"[{title.group(1)}:{title.group(2)}] {num} new commits"
-        t = datetime.datetime.fromtimestamp(time.mktime(entries[0].updated_parsed))
+        t = datetime.strptime(entries[0].updated, TIME_FORMAT).replace(tzinfo=timezone.utc)
         e = discord.Embed(title=title, color=0x7289da, description=desc, url=commits_link, timestamp=t)
 
         e.set_author(name=entries[0].author, url=entries[0].href, icon_url=entries[0].media_thumbnail[0]["url"])
@@ -94,10 +95,10 @@ class GitHub(commands.Cog):
 
     @staticmethod
     async def new_entries(entries, last_time):
-        new_time = time.time()
+        new_time = datetime.utcnow()
         new_entries = []
         for e in entries:
-            e_time = time.mktime(e.updated_parsed)
+            e_time = datetime.strptime(e.updated, TIME_FORMAT)
             if e_time > last_time:
                 new_entries.insert(0, e)
             else:
@@ -110,7 +111,7 @@ class GitHub(commands.Cog):
     async def _github(self, ctx: commands.Context):
         """GitHub RSS Feeds"""
 
-    @commands.admin()
+    @commands.admin_or_permissions(administrator=True)
     @_github.command(name="setchannel")
     async def _set_channel(self, ctx: commands.Context, channel: discord.TextChannel):
         """Set the GitHub RSS feed channel."""
@@ -121,7 +122,7 @@ class GitHub(commands.Cog):
         await self.config.guild(ctx.guild).channel.set(channel.id)
         return await ctx.send(f"The GitHub RSS feed channel has been set to {channel.mention}.")
 
-    @commands.admin()
+    @commands.admin_or_permissions(administrator=True)
     @_github.command(name="setrole")
     async def _set_role(self, ctx: commands.Context, role: discord.Role = None):
         """Set the GitHub RSS feed role."""
@@ -132,14 +133,14 @@ class GitHub(commands.Cog):
             await self.config.guild(ctx.guild).role.set(role.id)
             return await ctx.send(f"The GitHub RSS feed role has been set to {role.mention}.")
 
-    @commands.admin()
+    @commands.admin_or_permissions(administrator=True)
     @_github.command(name="setlimit")
     async def _set_limit(self, ctx: commands.Context, num: int = 5):
         """Set the GitHub RSS feed limit per user."""
         await self.config.guild(ctx.guild).limit.set(num)
         return await ctx.send(f"The GitHub RSS feed limit per user has been set to {num}.")
 
-    @commands.admin()
+    @commands.admin_or_permissions(administrator=True)
     @_github.command(name="get")
     async def _get(self, ctx: commands.Context, url: str, private=False):
         """Test out a GitHub url."""
@@ -159,7 +160,7 @@ class GitHub(commands.Cog):
         e = await self.commit_embed(entry, feedparser.parse(html).feed.link)
         await ctx.send(embed=e)
 
-    @commands.admin()
+    @commands.admin_or_permissions(administrator=True)
     @_github.command(name="force")
     async def _force(self, ctx: commands.Context, user: discord.Member, name: str):
         """Force a specific RSS feed to post."""
@@ -180,11 +181,12 @@ class GitHub(commands.Cog):
         ch = self.bot.get_channel(await self.config.guild(ctx.guild).channel())
         return await ch.send(embed=e)
 
-    @commands.admin()
+    @commands.admin_or_permissions(administrator=True)
     @_github.command(name="forceall")
     async def _force_all(self, ctx: commands.context):
         """Force a run of the RSS feed fetching coro."""
-        await self._github_rss.coro(self)
+        async with ctx.typing():
+            await self._github_rss.coro(self, guild_to_check=ctx.guild.id)
         return await ctx.tick()
 
     @_github.command(name="whatlinks")
@@ -244,9 +246,9 @@ class GitHub(commands.Cog):
                     return await ctx.send("There is already a feed with that link!")
                 elif len(feeds[str(ctx.author.id)].items()) > guild_limit:
                     return await ctx.send(f"You already have {guild_limit} feeds in this server!")
-                feeds[str(ctx.author.id)][name] = {"url": url, "time": time.time()}
+                feeds[str(ctx.author.id)][name] = {"url": url, "time": datetime.utcnow().timestamp()}
             except KeyError:
-                feeds[str(ctx.author.id)] = {name: {"url": url, "time": time.time()}}
+                feeds[str(ctx.author.id)] = {name: {"url": url, "time": datetime.utcnow().timestamp()}}
 
         ch = self.bot.get_channel(ch)
         name_regex = r"https://github.com/.*?/(.*?)/commits/(.*)"
@@ -263,7 +265,7 @@ class GitHub(commands.Cog):
 
         return await ctx.send("Feed successfully added.")
 
-    @commands.admin()
+    @commands.admin_or_permissions(administrator=True)
     @_github.command(name="rename")
     async def _rename(self, ctx: commands.Context, user: discord.Member, old_name: str, new_name: str):
         """Rename a feed."""
@@ -276,7 +278,7 @@ class GitHub(commands.Cog):
 
         return await ctx.send("Feed successfully renamed.")
 
-    @commands.admin()
+    @commands.admin_or_permissions(administrator=True)
     @_github.command(name="channel")
     async def _channel(self, ctx: commands.Context, user: discord.Member, feed_name: str, channel: discord.TextChannel = None):
         """Set a channel override for a feed (leave empty to reset)."""
@@ -338,10 +340,19 @@ class GitHub(commands.Cog):
                     feeds_string += f"`{name}`: <{re.fullmatch(repo_regex, feed['url']).group(1)}>\n"
             except KeyError:
                 return await ctx.send("No feeds found.")
-        if feeds_string == "": return await ctx.send(f"No feeds found. Try adding one with `{ctx.clean_prefix}github add`!")
-        return await ctx.send(embed=discord.Embed(title="Your GitHub RSS Feeds", description=feeds_string, color=color))
 
-    @commands.admin()
+        if not feeds_string:
+            return await ctx.send(f"No feeds found. Try adding one with `{ctx.clean_prefix}github add`!")
+
+        embeds: list[discord.Embed] = []
+        for page in pagify(feeds_string):
+            embeds.append(discord.Embed(description=page, color=color))
+
+        embeds[0].title = "Your GitHub RSS Feeds"
+        for embed in embeds:
+            await ctx.send(embed=embed)
+
+    @commands.admin_or_permissions(administrator=True)
     @_github.command(name="listall")
     async def _list_all(self, ctx: commands.Context):
         """List all GitHub RSS feeds in the server."""
@@ -351,17 +362,27 @@ class GitHub(commands.Cog):
         async with ctx.typing():
             async with self.config.guild(ctx.guild).feeds() as feeds:
                 repo_regex = r"(https://github.com/.*?/.*?)/.*"
-                for id, fs in feeds.items():
-                    feeds_string += f"{(await self.bot.get_or_fetch_user(int(id))).mention}: `{len(fs)}` feed(s) \n"
+                for i, fs in feeds.items():
+                    feeds_string += f"{(await self.bot.get_or_fetch_user(int(i))).mention}: `{len(fs)}` feed(s) \n"
                     for n, f in fs.items():
                         feeds_string += f"- `{n}`: <{re.fullmatch(repo_regex, f['url']).group(1)}>\n"
+                    feeds_string += "\n"
 
-        return await ctx.send(embed=discord.Embed(title="Server GitHub RSS Feeds", description=feeds_string, color=color))
+        embeds: list[discord.Embed] = []
+        for page in pagify(feeds_string, delims=["\n\n"]):
+            embeds.append(discord.Embed(description=page, color=color))
+
+        embeds[0].title = "Server GitHub RSS Feeds"
+        for embed in embeds:
+            await ctx.send(embed=embed)
 
     @tasks.loop(minutes=3)
-    async def _github_rss(self):
+    async def _github_rss(self, guild_to_check=None):
         all_guilds = await self.config.all_guilds()
         for guild in all_guilds:
+            if guild_to_check and guild != guild_to_check:
+                continue
+
             g = self.bot.get_guild(guild)
             ch = self.bot.get_channel(await self.config.guild(g).channel())
 
@@ -383,7 +404,7 @@ class GitHub(commands.Cog):
 
                         # Parse feed
                         entries = feedparser.parse(html).entries
-                        new_entries, new_time = await self.new_entries(entries, float(fs["time"]))
+                        new_entries, new_time = await self.new_entries(entries, datetime.utcfromtimestamp(float(fs["time"])))
 
                         # Create embeds
                         e = None
@@ -400,7 +421,7 @@ class GitHub(commands.Cog):
                                     await c.send(embed=e)
                             else:
                                 await ch.send(embed=e)
-                        fs["time"] = new_time
+                        fs["time"] = new_time.replace(tzinfo=timezone.utc).timestamp()
 
     @_github_rss.before_loop
     async def _before_github_rss(self):

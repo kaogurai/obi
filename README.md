@@ -13,7 +13,7 @@ Cogs marked with a ✓ are ready for use, while those with a ✗ are still a Wor
 | Cog | Status | Description | Authors & Credits |
 | --- | :---: | --- | --- |
 | Announcements | ✓ | Announcement w/ Role Ping | Obi-Wan3 |
-| BotAccess | ✗ | Allow Special Roles Access to Bot | Obi-Wan3, Vertyco#0117 (BC) |
+| BotAccess | ✓ | Allow Special Roles Access to Bot | Obi-Wan3, Vertyco#0117 (BC) |
 | BrainShop | ✓ | AI Chatbot using [BrainShop](https://brainshop.ai/) | Obi-Wan3, SaraCaterina#1015 (BC) |
 | Conditions | ✗ | Weather Conditions & AQI | Obi-Wan3 |
 | Counting | ✓ | Multifeatured Counting Channel | Obi-Wan3, Atmos#0101 (BC) |
@@ -26,9 +26,10 @@ Cogs marked with a ✓ are ready for use, while those with a ✗ are still a Wor
 | GitHub | ✓ | Github RSS Commit Feeds | Obi-Wan3 |
 | ImprovTime | ✓ | One Word Story Channel | Obi-Wan3, Atmos#0101 (BC) |
 | LaTeX | ✗ | Convert LaTeX to Images | Obi-Wan3 |
-| Leveler | ✗ | Chat + VC Leveling System | Obi-Wan3 |
+| Leveler | ✗ | Customizable Chat + VC Leveling System | Obi-Wan3 |
 | LFG | ✓ | VC LFG System w/ Custom Fields | Obi-Wan3, Eternalll#6100 (BC) |
 | MentionHelp | ✓ | Customizable MentionHelp Message | Obi-Wan3 |
+| MessageNotifier | ✓ | Notify You of Messages in Certain Channels | Obi-Wan3 |
 | NoDMs | ✓ | Disallow DM Commands | Obi-Wan3 |
 | PrivateRooms | ✓ | Automatic Private VCs with Lobby | Obi-Wan3, Archetype (Bloib & Echospawn, BC) |
 | PublicRooms | ✓ | Automatic Public VC Creation | Obi-Wan3, Archetype (Bloib & Echospawn, BC) |
@@ -57,7 +58,7 @@ If you don't already have Downloader loaded, go ahead and do that first: `[p]loa
 ```
 
 # Contact
-For support with my cogs, please contact me in #support_othercogs in the [Red Cog Support](https://discord.gg/GET4DVk) server.
+For support with my cogs, please contact me in #support_ob13-cogs in the [Red Cog Support](https://discord.gg/GET4DVk) server.
 
 
 ## Contributing
